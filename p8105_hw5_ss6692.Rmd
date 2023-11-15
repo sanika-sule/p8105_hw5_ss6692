@@ -12,7 +12,7 @@ library (broom)
 library(rvest)
 ```
 ### Problem 2
-#### Merging .csv files
+##### Merging .csv files
 ```{r reading_con_files}
 con_files = list.files(path = "data/con_data/", pattern = ".csv" )
   con_files = str_c("data/con_data/", con_files)
@@ -35,21 +35,22 @@ merged_df = bind_rows(con_df, exp_df) |>
     week = as.numeric(str_extract(week, "\\d+"))
   )
 ```
-#### Creating a spaghetti plot
+##### Creating a spaghetti plot
 ```{r spaghetti_plot}
 merged_df |>
   ggplot(aes(x=week, y=observation, group = patient_id, color = arm)) +
-  geom_point()+
+  facet_grid(~arm) +
+  geom_point() +
   geom_line() +
   labs(title = "Observations over time by study group", 
         x = "Week",
         y = "Observation",
         color = "Group")
 ```
-
+As shown by the plot, the the experimental group experienced greater overall changes over time. In general, the observations have a positive change from week 1 to week nice. The control group had less variation in observations and the observations remained relatively stable over the 9 weeks.
 ### Problem 3
 #### Setting up design elements
-First, we will calculate p values and mu hat using the provided specifications. This will be iterated 5000 times. 
+##### First, we will calculate p values and mu hat using the provided specifications. This will be iterated 5000 times. 
 ```{r sim_power}
 sim_power = function(mu) {
   
@@ -66,7 +67,7 @@ sim_power = function(mu) {
 
 sim_power_results = expand_grid(
   mu_df = c(0, 1, 2, 3, 4, 5, 6), 
-  iteration = 1:50
+  iteration = 1:5000
 ) |> 
   mutate(
     estimate = map(mu_df, sim_power)
@@ -74,7 +75,7 @@ sim_power_results = expand_grid(
   unnest(estimate)
 ```
 
-Now, we will plot the power of the test by the true mu.
+##### Now, we will plot the power of the test by the true mu.
 
 ```{r plotting_power}
 sim_power_results |> 
@@ -87,17 +88,18 @@ sim_power_results |>
   scale_x_continuous(breaks = seq(0,6, 1)) +
   labs(title = "Power Simulation (1:5000)")
 ```
+Power increases as effect size increases. 
 
-Now, we will calculate the true mu
-```{r mu_true}
+##### Now, we will calculate the true mu
+```{r true_mu}
 true_mu =
   sim_power_results |> 
   group_by(mu_df) |> 
   summarize(mean_mu = mean(mu_hat))
 ```
 
-Now, we will calculate the average estimate of mu in samples where the null was rejected
-```{r reject_mu}
+##### Now, we will calculate the average estimate of mu in samples where the null was rejected
+```{r rej_mu}
 reject_mu = 
   sim_power_results |> 
   filter(p_val < 0.05) |> 
@@ -105,13 +107,14 @@ reject_mu =
   summarize(mean_mu = mean(mu_hat))
 ```
 
-Now, we plot the rejected mu over the true mu to compare.
-```{r mu_plot}
+##### Now, we plot the rejected mu over the true mu to compare.
+```{r true_rej_mu}
 ggplot(true_mu, aes(x = mu_df, y = mean_mu)) +
   geom_line() +
   geom_line(data = reject_mu, color = "blue") +
-  labs(title = "Comparing True μ to the Rejected μ")
+  labs(title = "Comparing the True μ to the Rejected μ")
 ```
 
+As the plot shows, the rejected mu reflects the true mu at around 4. This is likely because as effect size increases, the rejected mu is more representative of the true mu.
 
 
