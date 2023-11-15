@@ -74,7 +74,7 @@ sim_power_results = expand_grid(
   unnest(estimate)
 ```
 
-Now, we will plot the power of the test by the true mu
+Now, we will plot the power of the test by the true mu.
 
 ```{r plotting_power}
 sim_power_results |> 
@@ -88,7 +88,7 @@ sim_power_results |>
   labs(title = "Power Simulation (1:5000)")
 ```
 
-
+Now, we will calculate the true mu
 ```{r mu_true}
 true_mu =
   sim_power_results |> 
@@ -96,6 +96,7 @@ true_mu =
   summarize(mean_mu = mean(mu_hat))
 ```
 
+Now, we will calculate the average estimate of mu in samples where the null was rejected
 ```{r reject_mu}
 reject_mu = 
   sim_power_results |> 
@@ -104,10 +105,13 @@ reject_mu =
   summarize(mean_mu = mean(mu_hat))
 ```
 
-Now, we plot.
-
+Now, we plot the rejected mu over the true mu to compare.
 ```{r mu_plot}
 ggplot(true_mu, aes(x = mu_df, y = mean_mu)) +
   geom_line() +
-  geom_line(data = reject_mu, color = "red") +
-  labs(title = "Comapring the True μ to Rejected μ")
+  geom_line(data = reject_mu, color = "blue") +
+  labs(title = "Comparing True μ to the Rejected μ")
+```
+
+
+
