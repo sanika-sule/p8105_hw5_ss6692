@@ -88,6 +88,7 @@ sim_power_results |>
   scale_x_continuous(breaks = seq(0,6, 1)) +
   labs(title = "Power Simulation (1:5000)")
 ```
+
 Power increases as effect size increases. 
 
 ##### Now, we will calculate the true mu
